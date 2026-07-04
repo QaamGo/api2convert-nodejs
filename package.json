@@ -1,0 +1,83 @@
+{
+  "name": "@api2convert/sdk",
+  "version": "10.2.0",
+  "description": "Official Node.js/TypeScript SDK for the API2Convert file-conversion API. Convert, compress and transform images, documents, audio, video, ebooks, archives and CAD with one line of code.",
+  "keywords": [
+    "api2convert",
+    "file conversion",
+    "convert",
+    "pdf",
+    "image",
+    "video",
+    "audio",
+    "ocr",
+    "sdk",
+    "api"
+  ],
+  "homepage": "https://www.api2convert.com",
+  "license": "MIT",
+  "author": "Qaamgo Media GmbH",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/QaamGo/api2convert-nodejs.git"
+  },
+  "bugs": "https://github.com/QaamGo/api2convert-nodejs/issues",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "docs",
+    "openapi",
+    "README.md",
+    "SECURITY.md",
+    "LICENSE",
+    "AGENTS.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . && prettier --check .",
+    "lint:fix": "eslint . --fix && prettier --write .",
+    "test": "vitest run test/unit",
+    "test:security": "vitest run test/security",
+    "test:live": "vitest run test/live",
+    "audit": "npm audit --omit=dev --audit-level=high",
+    "check": "npm run lint && npm run typecheck && npm run test && npm run test:security && npm run audit",
+    "prepublishOnly": "npm run check && npm run build"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@eslint/js": "^9",
+    "@types/node": "^22",
+    "@vitest/coverage-v8": "^2",
+    "eslint": "^9",
+    "prettier": "^3",
+    "tsup": "^8",
+    "typescript": "^5.6",
+    "typescript-eslint": "^8",
+    "vitest": "^2"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}
