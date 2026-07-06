@@ -15,16 +15,25 @@ export class StatsResource {
 
   /** `day` format `yyyy-mm-dd`. */
   async day(day: string, filter = 'all'): Promise<unknown> {
-    return this.transport.request('GET', `/stats/day/${day}/${filter}`);
+    return this.transport.request(
+      'GET',
+      `/stats/day/${encodeURIComponent(day)}/${encodeURIComponent(filter)}`,
+    );
   }
 
   /** `month` format `yyyy-mm`. */
   async month(month: string, filter = 'all'): Promise<unknown> {
-    return this.transport.request('GET', `/stats/month/${month}/${filter}`);
+    return this.transport.request(
+      'GET',
+      `/stats/month/${encodeURIComponent(month)}/${encodeURIComponent(filter)}`,
+    );
   }
 
   /** `year` format `yyyy`. */
   async year(year: string, filter = 'all'): Promise<unknown> {
-    return this.transport.request('GET', `/stats/year/${year}/${filter}`);
+    return this.transport.request(
+      'GET',
+      `/stats/year/${encodeURIComponent(year)}/${encodeURIComponent(filter)}`,
+    );
   }
 }

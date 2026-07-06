@@ -39,7 +39,9 @@ export class JobsResource {
   }
 
   async get(jobId: string): Promise<Job> {
-    return jobFromDict(asObject(await this.transport.request('GET', `/jobs/${jobId}`)));
+    return jobFromDict(
+      asObject(await this.transport.request('GET', `/jobs/${encodeURIComponent(jobId)}`)),
+    );
   }
 
   /** List the current key's jobs (paginated, 50 per page). */
@@ -53,7 +55,11 @@ export class JobsResource {
   }
 
   async update(jobId: string, payload: Record<string, unknown>): Promise<Job> {
-    return jobFromDict(asObject(await this.transport.request('PATCH', `/jobs/${jobId}`, payload)));
+    return jobFromDict(
+      asObject(
+        await this.transport.request('PATCH', `/jobs/${encodeURIComponent(jobId)}`, payload),
+      ),
+    );
   }
 
   /** Start processing a staged job (`process: true`). */
@@ -63,7 +69,7 @@ export class JobsResource {
 
   /** Cancel a job (whether staged or processing). */
   async cancel(jobId: string): Promise<void> {
-    await this.transport.request('DELETE', `/jobs/${jobId}`);
+    await this.transport.request('DELETE', `/jobs/${encodeURIComponent(jobId)}`);
   }
 
   /**
@@ -72,7 +78,13 @@ export class JobsResource {
    */
   async addInput(jobId: string, descriptor: Record<string, unknown>): Promise<InputFile> {
     return inputFileFromDict(
-      asObject(await this.transport.request('POST', `/jobs/${jobId}/input`, descriptor)),
+      asObject(
+        await this.transport.request(
+          'POST',
+          `/jobs/${encodeURIComponent(jobId)}/input`,
+          descriptor,
+        ),
+      ),
     );
   }
 
@@ -114,7 +126,7 @@ export class JobsResource {
 
   /** Outputs produced by the job (use {@link get} or {@link wait} first). */
   async outputs(jobId: string): Promise<OutputFile[]> {
-    const rows = await this.transport.request('GET', `/jobs/${jobId}/output`);
+    const rows = await this.transport.request('GET', `/jobs/${encodeURIComponent(jobId)}/output`);
     return asList(rows)
       .filter(isObject)
       .map((row) => outputFileFromDict(row));

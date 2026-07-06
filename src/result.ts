@@ -7,7 +7,7 @@
  */
 
 import { createWriteStream } from 'node:fs';
-import { mkdir, stat } from 'node:fs/promises';
+import { mkdir, stat, unlink } from 'node:fs/promises';
 import { dirname, join, posix } from 'node:path';
 import { pipeline } from 'node:stream/promises';
 
@@ -54,6 +54,9 @@ export class FileDownload {
     try {
       await pipeline(response.stream(), createWriteStream(target));
     } catch (cause) {
+      // A mid-stream failure leaves a truncated file on disk; remove it so a
+      // partial download is never mistaken for a complete one (best-effort).
+      await unlink(target).catch(() => undefined);
       if (cause instanceof Api2ConvertError) throw cause;
       throw new Api2ConvertError(`Could not write file: ${target}`, { cause });
     }

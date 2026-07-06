@@ -98,7 +98,42 @@ export class FakeResponse implements HttpResponse {
   }
 }
 
-type Queued = { kind: 'response'; response: FakeResponse } | { kind: 'error'; error: unknown };
+/**
+ * A 200 response whose stream yields `prefix` and then throws mid-transfer,
+ * simulating a connection dropped after some bytes have already been written to
+ * disk. `bytes()` rejects for parity (a memory download of a broken stream).
+ */
+export class StreamErrorResponse implements HttpResponse {
+  readonly status = 200;
+  readonly statusText = 'OK';
+  private readonly prefix: Uint8Array;
+  private readonly error: Error;
+
+  constructor(prefix: Uint8Array, error: Error) {
+    this.prefix = prefix;
+    this.error = error;
+  }
+
+  header(): string | null {
+    return null;
+  }
+
+  bytes(): Promise<Uint8Array> {
+    return Promise.reject(this.error);
+  }
+
+  async *stream(): AsyncIterable<Uint8Array> {
+    yield this.prefix;
+    await Promise.resolve();
+    throw this.error;
+  }
+
+  discard(): Promise<void> {
+    return Promise.resolve();
+  }
+}
+
+type Queued = { kind: 'response'; response: HttpResponse } | { kind: 'error'; error: unknown };
 
 export class FakeHttpSender implements HttpSender {
   readonly requests: RecordedRequest[] = [];
@@ -123,6 +158,18 @@ export class FakeHttpSender implements HttpSender {
     this.queue.push({
       kind: 'response',
       response: new FakeResponse(status, ENC.encode(text), headers),
+    });
+    return this;
+  }
+
+  /**
+   * Queue a 200 response that streams `prefix` and then fails mid-transfer, to
+   * exercise partial-download handling.
+   */
+  addStreamError(prefix: Uint8Array, error?: Error): this {
+    this.queue.push({
+      kind: 'response',
+      response: new StreamErrorResponse(prefix, error ?? new Error('connection reset mid-stream')),
     });
     return this;
   }

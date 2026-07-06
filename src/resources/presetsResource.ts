@@ -28,16 +28,20 @@ export class PresetsResource {
   }
 
   async get(presetId: string): Promise<Preset> {
-    return presetFromDict(asObject(await this.transport.request('GET', `/presets/${presetId}`)));
+    return presetFromDict(
+      asObject(await this.transport.request('GET', `/presets/${encodeURIComponent(presetId)}`)),
+    );
   }
 
   async update(presetId: string, payload: Record<string, unknown>): Promise<Preset> {
     return presetFromDict(
-      asObject(await this.transport.request('PATCH', `/presets/${presetId}`, payload)),
+      asObject(
+        await this.transport.request('PATCH', `/presets/${encodeURIComponent(presetId)}`, payload),
+      ),
     );
   }
 
   async delete(presetId: string): Promise<void> {
-    await this.transport.request('DELETE', `/presets/${presetId}`);
+    await this.transport.request('DELETE', `/presets/${encodeURIComponent(presetId)}`);
   }
 }

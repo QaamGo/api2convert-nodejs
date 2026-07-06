@@ -55,6 +55,16 @@ describe('FileDownload.save', () => {
     expect((await readFile(path)).toString()).toBe('DATA');
   });
 
+  it('leaves no partial file behind when the download fails mid-stream', async () => {
+    const { client, http } = makeClient();
+    http.addStreamError(enc('PARTIAL-BYTES'));
+    const output = outputFileFromDict({ uri: 'https://dl/x', filename: 'result.pdf' });
+    const target = join(dir, 'result.pdf');
+    await expect(client.download(output).save(target)).rejects.toBeInstanceOf(Api2ConvertError);
+    // the truncated file was removed, not left masquerading as a complete download
+    await expect(access(target)).rejects.toThrow();
+  });
+
   it('raises (and makes no download request) when the directory cannot be created', async () => {
     const { client, http } = makeClient();
     const blocker = join(dir, 'file');
