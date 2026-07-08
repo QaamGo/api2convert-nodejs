@@ -42,7 +42,7 @@ describe('client configuration', () => {
   });
 
   it('exposes the version constant', () => {
-    expect(Api2Convert.VERSION).toBe('10.2.0');
+    expect(Api2Convert.VERSION).toBe('10.2.1');
   });
 });
 
