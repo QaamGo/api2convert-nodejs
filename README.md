@@ -245,19 +245,40 @@ API2CONVERT_API_KEY=... npm run test:live
 ```
 
 The [live conformance suite](test/live/conformance.test.ts) doubles as an executable, end-to-end
-tour of the SDK — each test is a self-contained usage example:
+tour of the SDK: it runs each documented example against the real API and asserts success, plus two
+negative scenarios (an unknown target is a typed validation error; a bad key is a typed
+authentication error that never leaks the key). It runs automatically against the real API on every
+release tag (see `.github/workflows/live-conformance.yml`), so a published version is always
+verified end to end.
 
-1. **Convert a remote URL** — the one-call happy path.
-2. **Upload and convert a local file** — the multipart upload path.
-3. **Convert with options** — apply target-specific conversion options.
-4. **Discover the catalog** — list conversions and option schemas.
-5. **Drive the job lifecycle by hand** — create → add input → start → wait → inspect.
-6. **Handle a validation error** — an unknown target is a typed error.
-7. **Handle an authentication error** — a bad key is typed and never leaked.
+Every guide has a matching runnable program in [`examples/`](examples/). Run one with a real key:
 
-It runs automatically against the real API on every release tag (see
-`.github/workflows/live-conformance.yml`), so a published version is always verified end to end.
-Runnable single-purpose examples live in [`examples/`](examples/).
+```bash
+API2CONVERT_API_KEY=... npx tsx examples/quickstart.ts
+```
+
+| Example                                                 | What it shows                                                    |
+| ------------------------------------------------------- | ---------------------------------------------------------------- |
+| [`quickstart.ts`](examples/quickstart.ts)               | Convert a remote JPG to PNG, fetch the job, download the output. |
+| [`convert-files.ts`](examples/convert-files.ts)         | Browse the conversions catalog, then convert.                    |
+| [`uploading-files.ts`](examples/uploading-files.ts)     | Upload a local file and convert it in one call.                  |
+| [`job-lifecycle.ts`](examples/job-lifecycle.ts)         | Drive create → add input → start → wait → outputs by hand.       |
+| [`add-watermark.ts`](examples/add-watermark.ts)         | Stamp a PNG onto a PDF (a two-input job).                        |
+| [`create-thumbnails.ts`](examples/create-thumbnails.ts) | Render the first PDF page to a PNG thumbnail.                    |
+| [`compress-files.ts`](examples/compress-files.ts)       | Compress a JPG with the compress operation.                      |
+| [`create-archives.ts`](examples/create-archives.ts)     | Bundle a PDF and a PNG into a ZIP.                               |
+| [`create-hashes.ts`](examples/create-hashes.ts)         | Compute the SHA-256 of a file.                                   |
+| [`extract-assets.ts`](examples/extract-assets.ts)       | Extract embedded assets from a DOCX.                             |
+| [`file-analysis.ts`](examples/file-analysis.ts)         | Read a file's metadata as JSON.                                  |
+| [`compare-files.ts`](examples/compare-files.ts)         | Diff two images with SSIM.                                       |
+| [`capture-website.ts`](examples/capture-website.ts)     | Screenshot a URL to PNG.                                         |
+| [`audio-operations.ts`](examples/audio-operations.ts)   | Transcode a WAV to AAC with explicit codec settings.             |
+| [`image-operations.ts`](examples/image-operations.ts)   | Resize an image, cropping to keep aspect ratio.                  |
+| [`webhooks.ts`](examples/webhooks.ts)                   | Start an async job with a callback URL and verify the callback.  |
+| [`presets.ts`](examples/presets.ts)                     | List saved conversion presets.                                   |
+| [`statistics.ts`](examples/statistics.ts)               | Read API usage for a month.                                      |
+| [`rate-limits.ts`](examples/rate-limits.ts)             | Read the account's contract/quota information.                   |
+| [`authentication.ts`](examples/authentication.ts)       | Verify your API key by listing your jobs.                        |
 
 This SDK is hand-written and kept in sync with the API by an AI agent — see [`AGENTS.md`](AGENTS.md)
 and [`docs/SDK_CONTRACT.md`](docs/SDK_CONTRACT.md). Notable changes are recorded in
