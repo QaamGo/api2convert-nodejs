@@ -12,6 +12,7 @@ import { createHmac } from 'node:crypto';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { Readable } from 'node:stream';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -173,6 +174,74 @@ describe('redirect policy (real loopback servers)', () => {
   it.todo(
     'caps decompressed / downloaded response size via a maxDownloadBytes guard (future hardening)',
   );
+});
+
+describe('streaming timeout (real loopback servers)', () => {
+  // These prove BOTH directions escape the per-request timeout, which mocked senders cannot show —
+  // only a real transfer through undici exercises the AbortSignal deadline the sender manages. Each
+  // test FAILS (TimeoutError abort) without the fetchHttpSender fix and passes with it.
+
+  it('does not cap a streamed upload by the per-request timeout', async () => {
+    // A streamed upload transmits its whole body before the response is received, so a per-request
+    // timeout would abort a large/slow upload. The server reads the body then delays its response
+    // well past the (floored 1s) timeout, yet the upload must still succeed.
+    const srv = track(
+      await startServer((req, res) => {
+        req.on('end', () => {
+          setTimeout(() => {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end('{"id":"in-1","type":"upload"}');
+          }, 1500);
+        });
+        req.resume(); // drain the uploaded body so 'end' fires
+      }),
+    );
+
+    const client = new Api2Convert('secret-key', {
+      maxRetries: 0,
+      timeout: 1,
+      sleeper: () => Promise.resolve(),
+    });
+    const job = jobFromDict({
+      id: 'job-9',
+      token: 'tok-abc',
+      server: srv.url,
+      status: { code: 'incomplete' },
+    });
+    // A Node Readable takes the streamed-multipart path (a ReadableStream request body).
+    const input = await client.jobs().upload(job, Readable.from([Buffer.from('hello world')]));
+    expect(input.id).toBe('in-1');
+  });
+
+  it('does not cap a streamed download body by the per-request timeout', async () => {
+    // A download body is read lazily after the headers arrive; dribbling it out past the (floored 1s)
+    // timeout must not abort the read — the connect/header phase is bounded, the body is not.
+    const srv = track(
+      await startServer((_req, res) => {
+        res.writeHead(200);
+        let sent = 0;
+        const timer = setInterval(() => {
+          if (sent < 6) {
+            res.write('x');
+            sent += 1;
+          } else {
+            clearInterval(timer);
+            res.end();
+          }
+        }, 250);
+      }),
+    );
+
+    const client = new Api2Convert('secret-key', {
+      maxRetries: 0,
+      timeout: 1,
+      sleeper: () => Promise.resolve(),
+    });
+    const bytes = await client
+      .download(outputFileFromDict({ uri: `${srv.url}/slow.bin` }))
+      .contents();
+    expect(bytes.toString()).toBe('xxxxxx');
+  });
 });
 
 describe('filesystem safety', () => {

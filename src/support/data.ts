@@ -28,19 +28,30 @@ export function nullableString(value: unknown): string | null {
  *
  * `boolean` is rejected (PHP `is_numeric(true)` is false, so booleans must not
  * become `1`/`0`). Numeric strings and floats are truncated (`"3.9"` -> `3`).
- * Java splits int/long; a JS `number` is a 64-bit double (safe to 2^53), so a
- * single coercion covers file sizes.
+ * A JS `number` is a 64-bit double whose integers are exact only up to 2^53, so a
+ * value beyond the safe-integer range (e.g. an oversized file size, or a numeric
+ * string like `"9007199254740993"` that `Number()` rounds) has silently lost
+ * precision; rather than hydrate a misleading integer we return `null` (absence) —
+ * the fixed-width siblings (Java `long` / .NET `long?`) do the same for out-of-range
+ * input. Real file sizes never approach 2^53 bytes (~9 PB), so this only fires on
+ * corrupt/hostile payloads.
  */
 export function nullableNumber(value: unknown): number | null {
   if (typeof value === 'boolean') return null;
-  if (typeof value === 'number') return Number.isFinite(value) ? Math.trunc(value) : null;
+  if (typeof value === 'number') return safeWhole(value);
   if (typeof value === 'string') {
     const trimmed = value.trim();
     if (trimmed === '') return null;
-    const parsed = Number(trimmed);
-    return Number.isFinite(parsed) ? Math.trunc(parsed) : null;
+    return safeWhole(Number(trimmed));
   }
   return null;
+}
+
+/** Truncate to a whole number, or `null` when non-finite or outside the exact-integer range. */
+function safeWhole(value: number): number | null {
+  if (!Number.isFinite(value)) return null;
+  const whole = Math.trunc(value);
+  return Number.isSafeInteger(whole) ? whole : null;
 }
 
 export function asBool(value: unknown, dflt = false): boolean {

@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { Api2ConvertError, outputFileFromDict } from '../../src/index.js';
+import { Api2ConvertError, NetworkError, outputFileFromDict } from '../../src/index.js';
 import { makeClient } from '../helpers/testClient.js';
 
 const enc = (s: string): Uint8Array => new TextEncoder().encode(s);
@@ -55,14 +55,29 @@ describe('FileDownload.save', () => {
     expect((await readFile(path)).toString()).toBe('DATA');
   });
 
-  it('leaves no partial file behind when the download fails mid-stream', async () => {
+  it('types a mid-stream read failure as a NetworkError and leaves no partial file', async () => {
     const { client, http } = makeClient();
     http.addStreamError(enc('PARTIAL-BYTES'));
     const output = outputFileFromDict({ uri: 'https://dl/x', filename: 'result.pdf' });
     const target = join(dir, 'result.pdf');
-    await expect(client.download(output).save(target)).rejects.toBeInstanceOf(Api2ConvertError);
-    // the truncated file was removed, not left masquerading as a complete download
+    // A read failure part-way through streaming is a network error, not a filesystem
+    // "could not write" error, and must leave no partial file at the target.
+    await expect(client.download(output).save(target)).rejects.toBeInstanceOf(NetworkError);
     await expect(access(target)).rejects.toThrow();
+  });
+
+  it('preserves a pre-existing file at the target when the download fails mid-stream', async () => {
+    // Temp-file + atomic rename means a mid-stream failure must not destroy a previously-complete
+    // file at the target path (streaming straight into the target used to truncate it up front).
+    const { client, http } = makeClient();
+    http.addStreamError(enc('PARTIAL-BYTES'));
+    const output = outputFileFromDict({ uri: 'https://dl/x', filename: 'result.pdf' });
+    const target = join(dir, 'result.pdf');
+    await writeFile(target, 'PRE-EXISTING COMPLETE FILE');
+
+    await expect(client.download(output).save(target)).rejects.toBeInstanceOf(NetworkError);
+
+    expect((await readFile(target)).toString()).toBe('PRE-EXISTING COMPLETE FILE');
   });
 
   it('raises (and makes no download request) when the directory cannot be created', async () => {

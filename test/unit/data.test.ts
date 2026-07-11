@@ -39,6 +39,19 @@ describe('data helpers', () => {
     expect(nullableNumber(9_007_199_254_740_991)).toBe(9_007_199_254_740_991);
   });
 
+  it('nullableNumber returns null for values past the safe-integer range or non-finite', () => {
+    // Beyond 2^53 a JS number has lost integer precision, so hydrate null (absence) rather than a
+    // misleading value — mirrors the fixed-width siblings nulling out-of-range input.
+    expect(nullableNumber(Number.MAX_SAFE_INTEGER + 2)).toBeNull(); // past 2^53, precision lost
+    expect(nullableNumber(1e19)).toBeNull();
+    expect(nullableNumber(-1e19)).toBeNull();
+    expect(nullableNumber('9007199254740993')).toBeNull(); // Number() rounds this string
+    expect(nullableNumber('1e19')).toBeNull();
+    expect(nullableNumber(Infinity)).toBeNull();
+    expect(nullableNumber(-Infinity)).toBeNull();
+    expect(nullableNumber(NaN)).toBeNull();
+  });
+
   it('asBool', () => {
     expect(asBool(true)).toBe(true);
     expect(asBool('true')).toBe(false);

@@ -37,25 +37,56 @@ export class FetchHttpSender implements HttpSender {
     }
 
     const body: FetchBody | undefined = request.makeBody ? request.makeBody() : request.body;
+    const streamedBody = body instanceof ReadableStream;
+
+    // The per-request timeout must bound only the connect + response-header phase, never the
+    // streamed body transfer, or a large/slow transfer would be aborted mid-flight. We drive it
+    // with a manual deadline (not a single `AbortSignal.timeout`, whose wall-clock abort also fires
+    // during the body):
+    //   - a streamed *upload* transmits its whole body before `fetch()` resolves, so any deadline
+    //     would cap it — skip it entirely (connect stays bounded by undici's connect timeout) and
+    //     let the caller's own cancellation govern the transfer;
+    //   - a *download* body is read lazily after `fetch()` resolves, so we clear the deadline once
+    //     the headers arrive (below), leaving the streamed read ungoverned by this timeout.
+    const controller = new AbortController();
+    let deadline: ReturnType<typeof setTimeout> | undefined;
+    if (!streamedBody && request.timeoutMs > 0) {
+      deadline = setTimeout(() => {
+        controller.abort(
+          new DOMException(
+            `Request timed out after ${String(request.timeoutMs)}ms`,
+            'TimeoutError',
+          ),
+        );
+      }, request.timeoutMs);
+    }
 
     const init: RequestInitWithDuplex = {
       method: request.method,
       headers: request.headers,
       redirect: request.followRedirects ? 'follow' : 'manual',
-      signal: AbortSignal.timeout(request.timeoutMs),
+      signal: controller.signal,
     };
     if (body !== undefined) {
       init.body = body;
       // undici requires half-duplex when the request body is a stream.
-      if (body instanceof ReadableStream) {
+      if (streamedBody) {
         init.duplex = 'half';
       }
     }
 
     // A genuine transport failure (DNS / connection / TLS / timeout) is re-thrown
     // as-is so the Transport treats it as transient and may retry it.
-    const response = await this.fetchImpl(url, init);
-    return new FetchResponse(response);
+    try {
+      const response = await this.fetchImpl(url, init);
+      // Headers have arrived: stop the deadline so a lazily-streamed download body is not aborted
+      // mid-read by the per-request timeout.
+      if (deadline !== undefined) clearTimeout(deadline);
+      return new FetchResponse(response);
+    } catch (err) {
+      if (deadline !== undefined) clearTimeout(deadline);
+      throw err;
+    }
   }
 }
 
