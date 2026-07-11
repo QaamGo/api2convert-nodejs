@@ -34,7 +34,7 @@ describe('convert() from a URL', () => {
     // create
     expect(http.at(0).method).toBe('POST');
     expect(http.at(0).url).toMatch(/\/jobs$/);
-    expect(http.at(0).header('X-Oc-Api-Key')).toBe('test-key');
+    expect(http.at(0).header('X-Api2convert-Api-Key')).toBe('test-key');
     expect(http.at(0).followRedirects).toBe(false);
     expect(http.at(0).json()).toEqual({
       conversion: [{ target: 'png' }],
@@ -57,8 +57,8 @@ describe('convert() from a URL', () => {
     expect(dl.method).toBe('GET');
     expect(dl.url).toBe('https://dl.example.com/x.png');
     expect(dl.followRedirects).toBe(true); // no secret -> may follow storage redirects
-    expect(dl.header('X-Oc-Api-Key')).toBeNull(); // never send the account key on a download
-    expect(dl.header('X-Oc-Download-Password')).toBeNull();
+    expect(dl.header('X-Api2convert-Api-Key')).toBeNull(); // never send the account key on a download
+    expect(dl.header('X-Api2convert-Download-Password')).toBeNull();
   });
 
   it('passes conversion options through 1:1 and returns bytes via contents()', async () => {
@@ -114,8 +114,8 @@ describe('convert() from a local file / stream', () => {
     const upload = ctx.http.at(1);
     expect(upload.method).toBe('POST');
     expect(upload.url).toBe('https://up.example.com/v2/upload-file/job-2');
-    expect(upload.header('X-Oc-Token')).toBe('tok-abc');
-    expect(upload.header('X-Oc-Api-Key')).toBeNull(); // account key never reaches the upload server
+    expect(upload.header('X-Api2convert-Token')).toBe('tok-abc');
+    expect(upload.header('X-Api2convert-Api-Key')).toBeNull(); // account key never reaches the upload server
     expect(upload.followRedirects).toBe(false);
     expect(upload.hasStreamingBody).toBe(true);
     expect(upload.replayable).toBe(true); // a path re-opens a fresh stream per attempt
@@ -130,7 +130,7 @@ describe('convert() from a local file / stream', () => {
     const ctx = makeClient();
     stageQueue(ctx);
     await ctx.client.convert(Readable.from([Buffer.from('streamed')]), 'pdf');
-    expect(ctx.http.at(1).header('X-Oc-Token')).toBe('tok-abc');
+    expect(ctx.http.at(1).header('X-Api2convert-Token')).toBe('tok-abc');
     expect(ctx.http.at(1).replayable).toBe(false);
   });
 
@@ -161,7 +161,7 @@ describe('download password transparency', () => {
 
     await result.contents();
     const dl = ctx.http.last();
-    expect(dl.header('X-Oc-Download-Password')).toBe('hunter2');
+    expect(dl.header('X-Api2convert-Download-Password')).toBe('hunter2');
     expect(dl.followRedirects).toBe(false); // carries a secret -> no redirects
   });
 
@@ -172,7 +172,7 @@ describe('download password transparency', () => {
       downloadPassword: 'remembered',
     });
     await result.contents('override');
-    expect(ctx.http.last().header('X-Oc-Download-Password')).toBe('override');
+    expect(ctx.http.last().header('X-Api2convert-Download-Password')).toBe('override');
   });
 
   it('sends no password field or header when none is given', async () => {
@@ -181,7 +181,7 @@ describe('download password transparency', () => {
     const result = await ctx.client.convert('https://x/in.jpg', 'png');
     expect(ctx.http.at(0).json()).not.toHaveProperty('download_passwords');
     await result.contents();
-    expect(ctx.http.last().header('X-Oc-Download-Password')).toBeNull();
+    expect(ctx.http.last().header('X-Api2convert-Download-Password')).toBeNull();
   });
 });
 

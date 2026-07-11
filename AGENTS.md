@@ -61,9 +61,9 @@ junior-friendly surface — one-call `convert()` — and use AI to keep it curre
   release.
 - **The contract is law.** Public method names, signatures and semantics match `docs/SDK_CONTRACT.md`
   across every SDK language. Adapt only to Node/TS idiom (see divergences below).
-- **Upload uses the per-job `X-Oc-Token`, never the account key.** There is a test for this.
+- **Upload uses the per-job `X-Api2convert-Token`, never the account key.** There is a test for this.
 - **Secret-bearing requests never follow redirects.** The key/token/download-password ride in custom
-  `X-Oc-*` headers that undici would forward across hosts on a `redirect: 'follow'`. Only the
+  `X-Api2convert-*` headers that undici would forward across hosts on a `redirect: 'follow'`. Only the
   no-secret download path follows redirects. `redirect: 'follow'` is ESLint-forbidden outside
   `src/transport/fetchHttpSender.ts`, and `test/security` proves the guarantee with real servers.
 - **`convert()` stays one call** for the common case (path/URL/stream → `to` → `save()`).

@@ -27,7 +27,7 @@ export interface HttpRequest {
   makeBody?: () => FetchBody;
   /**
    * Whether this request may follow HTTP redirects. Only a no-secret download
-   * opts in; any request carrying an `X-Oc-*` secret header must stay `false` so
+   * opts in; any request carrying an `X-Api2convert-*` secret header must stay `false` so
    * a redirect can't forward the secret to another host.
    */
   followRedirects: boolean;

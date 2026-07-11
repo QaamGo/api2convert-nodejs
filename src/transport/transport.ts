@@ -83,7 +83,7 @@ export class Transport {
     query?: Record<string, string>,
     headers?: Record<string, string>,
   ): Promise<unknown> {
-    const requestHeaders: Record<string, string> = { 'X-Oc-Api-Key': this._config.apiKey };
+    const requestHeaders: Record<string, string> = { 'X-Api2convert-Api-Key': this._config.apiKey };
     Object.assign(requestHeaders, headers ?? {});
     let content: string | undefined;
     if (body !== undefined && body !== null) {
@@ -152,7 +152,7 @@ export class Transport {
   async interpret(response: HttpResponse): Promise<unknown> {
     await this.ensureSuccessful(response);
 
-    // Every API request rides the no-follow path (secrets travel in X-Oc-* headers), so a 3xx
+    // Every API request rides the no-follow path (secrets travel in X-Api2convert-* headers), so a 3xx
     // passes ensureSuccessful (status < 400) but was deliberately not followed; decoding its body
     // would yield an empty model. Surface it as a typed error instead (mirrors the download guard).
     if (response.status >= 300 && response.status < 400) {
@@ -204,14 +204,16 @@ export class Transport {
   /**
    * Open a (self-contained) download URL and return the response for streaming.
    *
-   * A request carrying any `X-Oc-*` secret header (e.g. a download password) must
+   * A request carrying any `X-Api2convert-*` secret header (e.g. a download password) must
    * not follow redirects; a plain, passwordless download may follow storage/CDN
    * redirects. When a secret-bearing request is redirected, `redirect: 'manual'`
    * yields an opaque response (`status 0`) — surfaced as a {@link NetworkError}
    * so a silently-empty file never lands on disk.
    */
   async openDownload(uri: string, headers: Record<string, string> = {}): Promise<HttpResponse> {
-    const carriesSecret = Object.keys(headers).some((h) => h.toLowerCase().startsWith('x-oc-'));
+    const carriesSecret = Object.keys(headers).some((h) =>
+      h.toLowerCase().startsWith('x-api2convert-'),
+    );
     const request: HttpRequest = {
       method: 'GET',
       url: uri,

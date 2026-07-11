@@ -100,7 +100,7 @@ export class FileDownload {
 
   private headers(downloadPassword?: string): Record<string, string> {
     const password = downloadPassword ?? this.downloadPassword;
-    return password !== null ? { 'X-Oc-Download-Password': password } : {};
+    return password !== null ? { 'X-Api2convert-Download-Password': password } : {};
   }
 }
 

@@ -3,7 +3,7 @@
  *
  * This is the one file allowed to opt a request into following redirects — the
  * load-bearing security boundary. `fetch` follows redirects by default, and
- * undici forwards custom `X-Oc-*` headers across a cross-origin redirect (the
+ * undici forwards custom `X-Api2convert-*` headers across a cross-origin redirect (the
  * Fetch spec only strips `Authorization`/`Cookie`), so a secret-bearing request
  * must be sent with `redirect: 'manual'`. `'manual'` returns an opaque redirect
  * (`status 0`, empty body) — undici never opens a connection to the target, so

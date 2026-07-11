@@ -3,7 +3,7 @@
  *
  * The redirect guarantees are proven with REAL loopback HTTP servers (node:http),
  * mirroring Java `SecurityTest`: only a real cross-host 302 can demonstrate that
- * the transport (undici) does not forward an `X-Oc-*` secret header to the
+ * the transport (undici) does not forward an `X-Api2convert-*` secret header to the
  * redirect target. Header/query/prototype/ReDoS checks use the injected fake
  * sender where a real network round-trip adds nothing.
  */
@@ -57,7 +57,7 @@ describe('secret hygiene', () => {
     expect(err.message).not.toContain(secret);
     expect(err.stack ?? '').not.toContain(secret);
     // ...but the key WAS sent as the auth header (the request was authenticated).
-    expect(http.last().header('X-Oc-Api-Key')).toBe(secret);
+    expect(http.last().header('X-Api2convert-Api-Key')).toBe(secret);
   });
 
   it('never places the API key in the URL / query string', async () => {
@@ -77,7 +77,7 @@ describe('redirect policy (real loopback servers)', () => {
   it('does not forward the account key across a cross-host redirect', async () => {
     const evil = track(
       await startServer((req, res) =>
-        respond(res, 200, `grabbed:${String(req.headers['x-oc-api-key'] ?? '')}`),
+        respond(res, 200, `grabbed:${String(req.headers['x-api2convert-api-key'] ?? '')}`),
       ),
     );
     const api = track(await startServer((_req, res) => redirectTo(res, `${evil.url}/steal`)));
@@ -120,8 +120,8 @@ describe('redirect policy (real loopback servers)', () => {
       .catch(() => undefined);
 
     const seen = uploadSrv.headersReceived()[0];
-    expect(seen?.['x-oc-token']).toBe('tok-abc');
-    expect(seen?.['x-oc-api-key']).toBeUndefined();
+    expect(seen?.['x-api2convert-token']).toBe('tok-abc');
+    expect(seen?.['x-api2convert-api-key']).toBeUndefined();
     expect(evil.hits()).toBe(0);
   });
 
@@ -136,7 +136,7 @@ describe('redirect policy (real loopback servers)', () => {
       .catch(() => undefined);
 
     expect(evil.hits()).toBe(0);
-    const leaked = evil.headersReceived().some((h) => h['x-oc-download-password'] !== undefined);
+    const leaked = evil.headersReceived().some((h) => h['x-api2convert-download-password'] !== undefined);
     expect(leaked).toBe(false);
   });
 

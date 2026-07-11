@@ -1,7 +1,7 @@
 /**
  * Real loopback HTTP servers for the independent security suite — the Node analog
  * of Java `SecurityTest`'s `com.sun.net.httpserver` servers. Only real servers can
- * prove the *transport* does not forward `X-Oc-*` secret headers across a
+ * prove the *transport* does not forward `X-Api2convert-*` secret headers across a
  * cross-host redirect (a mocked sender short-circuits the redirect entirely).
  */
 

@@ -42,8 +42,8 @@ describe('FileUploader guards', () => {
     expect(input.type).toBe('upload');
     const req = http.last();
     expect(req.url).toBe('https://up.example.com/v2/upload-file/job-2');
-    expect(req.header('X-Oc-Token')).toBe('tok-abc');
-    expect(req.header('X-Oc-Api-Key')).toBeNull();
+    expect(req.header('X-Api2convert-Token')).toBe('tok-abc');
+    expect(req.header('X-Api2convert-Api-Key')).toBeNull();
     expect(req.followRedirects).toBe(false);
   });
 });

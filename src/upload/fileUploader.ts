@@ -4,7 +4,7 @@
  * This step is intentionally hand-written — it is NOT described by the OpenAPI
  * spec. It posts a `multipart/form-data` body (field `file`) to
  * `{job.server}/upload-file/{job.id}` and authenticates with the per-job
- * `X-Oc-Token` header — never the account API key. Stream inputs are streamed, so
+ * `X-Api2convert-Token` header — never the account API key. Stream inputs are streamed, so
  * large files are not read into memory. Internal.
  */
 
@@ -46,7 +46,7 @@ export class FileUploader {
     const url = job.server.replace(/\/+$/, '') + '/upload-file/' + job.id;
     const built = await this.buildBody(file, filename);
 
-    const headers: Record<string, string> = { 'X-Oc-Token': job.token };
+    const headers: Record<string, string> = { 'X-Api2convert-Token': job.token };
     if (built.contentType !== undefined) headers['Content-Type'] = built.contentType;
 
     const request: HttpRequest = {

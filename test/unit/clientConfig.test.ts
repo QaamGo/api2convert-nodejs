@@ -30,7 +30,7 @@ describe('client configuration', () => {
     const http = new FakeHttpSender().addJson(200, { id: 'j' });
     const client = new Api2Convert('', { httpSender: http });
     await client.jobs().get('j');
-    expect(http.last().header('X-Oc-Api-Key')).toBe('env-key');
+    expect(http.last().header('X-Api2convert-Api-Key')).toBe('env-key');
   });
 
   it('an explicit key wins over the env var', async () => {
@@ -38,7 +38,7 @@ describe('client configuration', () => {
     const http = new FakeHttpSender().addJson(200, { id: 'j' });
     const client = new Api2Convert('explicit', { httpSender: http });
     await client.jobs().get('j');
-    expect(http.last().header('X-Oc-Api-Key')).toBe('explicit');
+    expect(http.last().header('X-Api2convert-Api-Key')).toBe('explicit');
   });
 
   it('exposes the version constant', () => {

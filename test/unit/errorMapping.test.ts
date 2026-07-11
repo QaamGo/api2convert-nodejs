@@ -88,6 +88,6 @@ describe('error mapping', () => {
       .catch((e: unknown) => e)) as Error;
     expect(err.message).not.toContain('sk_live_super_secret');
     // ...but the key WAS sent as the auth header (the request was authenticated).
-    expect(http.last().header('X-Oc-Api-Key')).toBe('sk_live_super_secret');
+    expect(http.last().header('X-Api2convert-Api-Key')).toBe('sk_live_super_secret');
   });
 });

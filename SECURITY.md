@@ -13,9 +13,9 @@ _Security_ tab (private vulnerability reporting). If that is unavailable, use th
 The library handles three secrets on the caller's behalf — keep all of them out of source control and
 configure them via environment variables or a secret manager:
 
-- the **account API key** (`X-Oc-Api-Key`) — read from configuration/environment
+- the **account API key** (`X-Api2convert-Api-Key`) — read from configuration/environment
   (`API2CONVERT_API_KEY`) and sent only over TLS to the API host, never in a URL query string;
-- the **per-job upload token** (`X-Oc-Token`) — used to authenticate uploads to the per-job upload
+- the **per-job upload token** (`X-Api2convert-Token`) — used to authenticate uploads to the per-job upload
   server; the account key is **never** sent there;
 - the **webhook signing secret** — used locally to verify callback signatures (HMAC-SHA256 over the
   raw request body, constant-time comparison via `crypto.timingSafeEqual`). The signature is delivered
@@ -26,10 +26,10 @@ configure them via environment variables or a secret manager:
 - The SDK never logs a key/token and never places one in an exception message.
 - A request that carries **any secret in a custom header never follows HTTP redirects** — a redirect
   could otherwise forward the secret to another host. `fetch` follows redirects by default and undici
-  forwards custom `X-Oc-*` headers across a cross-origin redirect (the Fetch spec only strips
+  forwards custom `X-Api2convert-*` headers across a cross-origin redirect (the Fetch spec only strips
   `Authorization` / `Cookie`), so every secret-bearing request is sent with `redirect: 'manual'`.
-  This covers the account key (`X-Oc-Api-Key`), the per-job upload token (`X-Oc-Token`) **and** a
-  download password (`X-Oc-Download-Password`). Only a plain, passwordless download (`GET output.uri`,
+  This covers the account key (`X-Api2convert-Api-Key`), the per-job upload token (`X-Api2convert-Token`) **and** a
+  download password (`X-Api2convert-Download-Password`). Only a plain, passwordless download (`GET output.uri`,
   which carries no secret) follows redirects, so storage/CDN URLs still resolve. A cross-host redirect
   test suite (`test/security`) proves this against real loopback servers.
 - A directory download uses a sanitized basename derived from the API-supplied filename, so a
