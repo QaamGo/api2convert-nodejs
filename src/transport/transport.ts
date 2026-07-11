@@ -151,6 +151,16 @@ export class Transport {
   /** Raise a typed exception for error responses; otherwise decode JSON. */
   async interpret(response: HttpResponse): Promise<unknown> {
     await this.ensureSuccessful(response);
+
+    // Every API request rides the no-follow path (secrets travel in X-Oc-* headers), so a 3xx
+    // passes ensureSuccessful (status < 400) but was deliberately not followed; decoding its body
+    // would yield an empty model. Surface it as a typed error instead (mirrors the download guard).
+    if (response.status >= 300 && response.status < 400) {
+      throw new NetworkError(
+        `API2Convert returned an unexpected redirect (HTTP ${response.status}); the request was not followed.`,
+      );
+    }
+
     const raw = await response.bytes();
     if (raw.length === 0) return {};
     let decoded: unknown;

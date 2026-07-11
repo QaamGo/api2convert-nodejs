@@ -82,10 +82,8 @@ describe('redirect policy (real loopback servers)', () => {
     const api = track(await startServer((_req, res) => redirectTo(res, `${evil.url}/steal`)));
 
     const client = realClient(`${api.url}/v2`);
-    await client
-      .jobs()
-      .get('j')
-      .catch(() => undefined); // the un-followed 302 yields no usable body
+    // An authenticated 3xx is surfaced as a typed error, not silently empty.
+    await expect(client.jobs().get('j')).rejects.toThrow(/unexpected redirect/);
 
     expect(evil.hits()).toBe(0);
     expect(api.hits()).toBe(1);
