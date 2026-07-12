@@ -121,6 +121,41 @@ try {
 > — call `Api2Convert.webhooks().parse(payload)` (or pass an empty secret) to deserialize the
 > callback without verifying.
 
+## Cloud storage
+
+Read an input straight from your own S3/Azure/FTP/Google Cloud storage, and/or deliver the converted
+output into a bucket — no need to route bytes through your app. Credentials ride in the request body,
+so the SDK masks the whole credentials object to `[REDACTED]` on inspection/logging and never puts it
+in an error message.
+
+Read the input from Amazon S3 and save the result locally (per-provider factory; flat, lowercase keys):
+
+```ts
+import { Api2Convert, CloudInput } from '@api2convert/sdk';
+
+const input = CloudInput.amazonS3('my-bucket', 'invoices/march.docx', 'AKIA…', 'wJalr…');
+const result = await client.convert(input, 'pdf');
+await result.save('march.pdf');
+```
+
+Deliver the output into a bucket via an `OutputTarget` and the `outputTargets` option — when an output
+target is set the conversion delivers straight to your storage and there's **no** local download, so
+`convert()` returns the completed job:
+
+```ts
+import { OutputTarget, CloudProvider } from '@api2convert/sdk';
+
+const target = OutputTarget.of(
+  CloudProvider.AmazonS3,
+  { bucket: 'my-bucket', file: 'out/report.pdf' },
+  { accesskeyid: 'AKIA…', secretaccesskey: 'wJalr…' },
+);
+await client.convert('report.docx', 'pdf', null, { outputTargets: [target] });
+```
+
+`azure`, `ftp` and `googleCloud` have matching `CloudInput` input factories; output uses the generic
+`OutputTarget` for every provider.
+
 ## Error handling
 
 Every failure is an exception extending `Api2ConvertError`:
