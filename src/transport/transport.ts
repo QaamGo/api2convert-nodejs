@@ -157,7 +157,7 @@ export class Transport {
     // would yield an empty model. Surface it as a typed error instead (mirrors the download guard).
     if (response.status >= 300 && response.status < 400) {
       throw new NetworkError(
-        `API2Convert returned an unexpected redirect (HTTP ${response.status}); the request was not followed.`,
+        `API2Convert returned an unexpected redirect (HTTP ${String(response.status)}); the request was not followed.`,
       );
     }
 

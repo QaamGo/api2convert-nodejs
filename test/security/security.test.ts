@@ -136,7 +136,9 @@ describe('redirect policy (real loopback servers)', () => {
       .catch(() => undefined);
 
     expect(evil.hits()).toBe(0);
-    const leaked = evil.headersReceived().some((h) => h['x-api2convert-download-password'] !== undefined);
+    const leaked = evil
+      .headersReceived()
+      .some((h) => h['x-api2convert-download-password'] !== undefined);
     expect(leaked).toBe(false);
   });
 
