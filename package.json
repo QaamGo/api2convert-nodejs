@@ -1,6 +1,6 @@
 {
   "name": "@api2convert/sdk",
-  "version": "10.2.1",
+  "version": "10.3.0",
   "description": "Official Node.js/TypeScript SDK for the API2Convert file-conversion API. Convert, compress and transform images, documents, audio, video, ebooks, archives and CAD with one line of code.",
   "keywords": [
     "api2convert",
