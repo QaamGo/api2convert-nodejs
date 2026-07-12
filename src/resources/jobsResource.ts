@@ -9,6 +9,7 @@
 import { MAX_POLL_TIMEOUT, MIN_POLL_INTERVAL } from '../config.js';
 import type { ConvertInput } from '../convertOptions.js';
 import { ConversionFailedError, ConversionTimeoutError } from '../errors.js';
+import { CloudInput } from '../models/cloudInput.js';
 import { inputFileFromDict, type InputFile } from '../models/inputFile.js';
 import { jobFromDict, type Job } from '../models/job.js';
 import { outputFileFromDict, type OutputFile } from '../models/outputFile.js';
@@ -73,17 +74,18 @@ export class JobsResource {
   }
 
   /**
-   * Attach an input by descriptor, e.g. a remote URL:
-   * `addInput(jobId, { type: 'remote', source: 'https://...' })`.
+   * Attach an input — a {@link CloudInput} builder, or a raw descriptor, e.g. a remote URL
+   * (`addInput(jobId, { type: 'remote', source: 'https://...' })`) or a Google Drive picker
+   * (`{ type: 'gdrive_picker', source: fileId, credentials: { token } }`).
    */
-  async addInput(jobId: string, descriptor: Record<string, unknown>): Promise<InputFile> {
+  async addInput(
+    jobId: string,
+    descriptor: CloudInput | Record<string, unknown>,
+  ): Promise<InputFile> {
+    const body = descriptor instanceof CloudInput ? descriptor.toDict() : descriptor;
     return inputFileFromDict(
       asObject(
-        await this.transport.request(
-          'POST',
-          `/jobs/${encodeURIComponent(jobId)}/input`,
-          descriptor,
-        ),
+        await this.transport.request('POST', `/jobs/${encodeURIComponent(jobId)}/input`, body),
       ),
     );
   }

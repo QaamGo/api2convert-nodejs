@@ -16,6 +16,11 @@ export interface InputFile {
   readonly size: number | null;
   readonly contentType: string | null;
   readonly options: JsonObject;
+  /**
+   * Cloud-input locator keys (`bucket`, `file`, `host`, …); empty for non-cloud inputs.
+   * Credentials are never surfaced on read.
+   */
+  readonly parameters: JsonObject;
 }
 
 export function inputFileFromDict(data: JsonObject): InputFile {
@@ -28,5 +33,6 @@ export function inputFileFromDict(data: JsonObject): InputFile {
     size: nullableNumber(data.size),
     contentType: nullableString(data.content_type),
     options: asObject(data.options),
+    parameters: asObject(data.parameters),
   });
 }

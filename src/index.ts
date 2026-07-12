@@ -47,9 +47,14 @@ export {
   statusFromDict,
 } from './models/index.js';
 
+// Cloud connectors (build-side vocabulary + descriptors).
+export { CloudInput } from './models/cloudInput.js';
+export { OutputTarget, outputTargetFromDict } from './models/outputTarget.js';
+
 // Enums.
 export { JobStatus, isTerminalCode } from './enums/jobStatus.js';
 export { InputType } from './enums/inputType.js';
+export { CloudProvider } from './enums/cloudProvider.js';
 
 // Errors.
 export {

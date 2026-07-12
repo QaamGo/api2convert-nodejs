@@ -8,8 +8,10 @@
 import { createConfig, type Api2ConvertOptions } from './config.js';
 import type { AsyncOptions, ConvertInput, ConvertOptions } from './convertOptions.js';
 import { Api2ConvertError } from './errors.js';
+import { CloudInput } from './models/cloudInput.js';
 import type { Job } from './models/job.js';
 import type { OutputFile } from './models/outputFile.js';
+import type { OutputTarget } from './models/outputTarget.js';
 import {
   ContractsResource,
   ConversionsResource,
@@ -91,6 +93,7 @@ export class Api2Convert {
       undefined,
       opts.filename,
       opts.downloadPassword,
+      opts.outputTargets,
     );
     const done = await this._jobs.wait(job.id, opts.timeout);
     return new ConversionResult(done, this.transport, opts.outputIndex ?? 0, opts.downloadPassword);
@@ -116,6 +119,7 @@ export class Api2Convert {
       opts.callback,
       opts.filename,
       opts.downloadPassword,
+      opts.outputTargets,
     );
   }
 
@@ -171,10 +175,15 @@ export class Api2Convert {
     callback: string | undefined,
     filename: string | undefined,
     downloadPassword: string | undefined,
+    outputTargets: OutputTarget[] | undefined,
   ): Promise<Job> {
     const conversion: Record<string, unknown> = { target: to };
     if (category !== undefined) conversion.category = category;
     if (options && Object.keys(options).length > 0) conversion.options = { ...options };
+    // Cloud delivery targets ride the conversion's output_target — never merged into options.
+    if (outputTargets && outputTargets.length > 0) {
+      conversion.output_target = outputTargets.map((target) => target.toDict());
+    }
 
     const payload: Record<string, unknown> = { conversion: [conversion] };
     if (callback !== undefined) {
@@ -183,6 +192,14 @@ export class Api2Convert {
     }
     if (downloadPassword !== undefined) {
       payload.download_passwords = [downloadPassword];
+    }
+
+    // A cloud input imports from customer storage — a started job with the descriptor inline,
+    // exactly like a remote URL (never staged/uploaded).
+    if (input instanceof CloudInput) {
+      payload.process = true;
+      payload.input = [input.toDict()];
+      return this._jobs.create(payload);
     }
 
     if (typeof input === 'string' && URL_RE.test(input)) {

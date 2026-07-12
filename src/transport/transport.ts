@@ -22,6 +22,7 @@ import {
   ValidationError,
 } from '../errors.js';
 import { isObject, type JsonObject } from '../support/data.js';
+import { redactBody } from '../support/redactor.js';
 import { VERSION } from '../version.js';
 import {
   defaultSleeper,
@@ -180,7 +181,11 @@ export class Transport {
     const status = response.status;
     if (status < 400) return;
 
-    const body = await this.decodeSafe(response);
+    // Belt-and-suspenders: deep-redact the decoded error body before it lands on the exception.
+    // Cloud credentials ride in the plaintext request body; the API only ever echoes field *names*
+    // (never a value), but a future server/proxy change must not be able to surface a secret through
+    // `error.body`. The `message` is server-provided text and is never derived from the request body.
+    const body = redactBody(await this.decodeSafe(response));
     const apiMessage = body.message;
     const message =
       typeof apiMessage === 'string' ? apiMessage : response.statusText || 'Request failed';
