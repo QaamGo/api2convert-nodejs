@@ -83,7 +83,10 @@ export class FileUploader {
     // In-memory bytes / Blob — replayable FormData body (undici sets the boundary).
     if (file instanceof Uint8Array) {
       const name = filename ?? 'file';
-      const blob = new Blob([file]);
+      // @types/node 26 narrowed BlobPart to Uint8Array<ArrayBuffer>, excluding
+      // SharedArrayBuffer-backed views. Blob accepts them at runtime, and copying here
+      // would double peak memory on large uploads, so assert rather than reallocate.
+      const blob = new Blob([file as Uint8Array<ArrayBuffer>]);
       return { makeBody: () => formDataBody(blob, name), replayable: true };
     }
     if (file instanceof Blob) {

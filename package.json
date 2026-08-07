@@ -64,17 +64,16 @@
     "check": "npm run lint && npm run typecheck && npm run test && npm run test:security && npm run audit",
     "prepublishOnly": "npm run check && npm run build"
   },
-  "dependencies": {},
   "devDependencies": {
-    "@eslint/js": "^9",
-    "@types/node": "^22",
-    "@vitest/coverage-v8": "^2",
-    "eslint": "^9",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.1.2",
+    "@vitest/coverage-v8": "^4.1.10",
+    "eslint": "^10.8.0",
     "prettier": "^3",
     "tsup": "^8",
-    "typescript": "^5.6",
+    "typescript": "^5.9.3",
     "typescript-eslint": "^8",
-    "vitest": "^2"
+    "vitest": "^4.1.10"
   },
   "publishConfig": {
     "access": "public",

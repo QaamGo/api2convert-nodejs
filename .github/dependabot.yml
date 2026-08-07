@@ -9,24 +9,20 @@ updates:
       interval: weekly
     open-pull-requests-limit: 10
     groups:
-      # The vitest/vite/esbuild cluster releases together; one PR per train.
+      # The vitest/vite/esbuild cluster releases together; one PR per train. Majors are
+      # deliberately in scope: vitest and @vitest/coverage-v8 are peer-locked, so splitting
+      # their majors into separate PRs makes both unmergeable (npm ci fails on ERESOLVE).
       test-tooling:
         patterns:
           - 'vitest'
           - '@vitest/*'
           - 'vite'
-        update-types:
-          - minor
-          - patch
       lint-tooling:
         patterns:
           - 'eslint'
           - '@eslint/*'
           - 'typescript-eslint'
           - 'prettier'
-        update-types:
-          - minor
-          - patch
 
   # GitHub Actions used by CI and the release pipeline. Keeps the pinned action
   # versions current (and, once SHA-pinned, updates the SHA + version comment).
