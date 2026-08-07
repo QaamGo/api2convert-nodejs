@@ -26,7 +26,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [18, 20, 22, 24]
+        # Node 18 went EOL in April 2025 and vitest 4 cannot run on it at all — rolldown
+        # imports node:util#styleText, added in 20.12. We only claim support for what we
+        # test, so the engines floor moved to >=20 alongside this.
+        node: [20, 22, 24]
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v4

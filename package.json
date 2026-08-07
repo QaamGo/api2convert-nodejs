@@ -24,7 +24,7 @@
   "bugs": "https://github.com/QaamGo/api2convert-nodejs/issues",
   "type": "module",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "sideEffects": false,
   "main": "./dist/index.cjs",
