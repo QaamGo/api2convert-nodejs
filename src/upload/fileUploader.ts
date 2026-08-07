@@ -18,6 +18,7 @@ import type { ConvertInput } from '../convertOptions.js';
 import { Api2ConvertError } from '../errors.js';
 import { inputFileFromDict, type InputFile } from '../models/inputFile.js';
 import type { Job } from '../models/job.js';
+import { trimTrailing } from '../support/strings.js';
 import { asObject } from '../support/data.js';
 import type { FetchBody, HttpRequest } from '../transport/httpSender.js';
 import type { Transport } from '../transport/transport.js';
@@ -43,7 +44,7 @@ export class FileUploader {
       );
     }
 
-    const url = job.server.replace(/\/+$/, '') + '/upload-file/' + job.id;
+    const url = trimTrailing(job.server, '/') + '/upload-file/' + job.id;
     const built = await this.buildBody(file, filename);
 
     const headers: Record<string, string> = { 'X-Api2convert-Token': job.token };

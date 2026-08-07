@@ -15,6 +15,7 @@ import { pipeline } from 'node:stream/promises';
 import { Api2ConvertError, NetworkError } from './errors.js';
 import type { Job } from './models/job.js';
 import type { OutputFile } from './models/outputFile.js';
+import { trimTrailing } from './support/strings.js';
 import type { Transport } from './transport/transport.js';
 
 /** A downloadable output file. Returned by `client.download(output)`. */
@@ -93,7 +94,7 @@ export class FileDownload {
       pathOrDir.endsWith('/') || pathOrDir.endsWith('\\') || (await isDirectory(pathOrDir));
     if (looksLikeDir) {
       const name = safeName(this.output.filename) ?? safeName(this.output.id) ?? 'output';
-      return join(pathOrDir.replace(/[/\\]+$/, ''), name);
+      return join(trimTrailing(pathOrDir, '/\\'), name);
     }
     return pathOrDir;
   }

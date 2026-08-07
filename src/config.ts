@@ -5,6 +5,7 @@
  * neither busy-loop the poll (interval floor) nor poll unbounded (timeout ceiling).
  */
 
+import { trimTrailing } from './support/strings.js';
 import type { HttpSender, Rng, Sleeper } from './transport/httpSender.js';
 
 /** Default API base URL — includes the `/v2` path segment, no trailing slash. */
@@ -61,7 +62,7 @@ export function createConfig(apiKey: string, options: Api2ConvertOptions = {}): 
   const pollInterval = Math.max(MIN_POLL_INTERVAL, options.pollInterval ?? 1.0);
   const pollMaxInterval = Math.max(pollInterval, options.pollMaxInterval ?? 5.0);
   const pollTimeout = Math.min(MAX_POLL_TIMEOUT, Math.max(0, intOr(options.pollTimeout, 300)));
-  const baseUrl = (options.baseUrl ?? DEFAULT_BASE_URL).replace(/\/+$/, '');
+  const baseUrl = trimTrailing(options.baseUrl ?? DEFAULT_BASE_URL, '/');
 
   return Object.freeze({
     apiKey,
