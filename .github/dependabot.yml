@@ -4,7 +4,7 @@ updates:
   # everything here is the dev/CI toolchain resolved through the committed
   # package-lock.json — noisy but the only place npm advisories can land.
   - package-ecosystem: npm
-    directory: "/"
+    directory: '/'
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
@@ -12,18 +12,18 @@ updates:
       # The vitest/vite/esbuild cluster releases together; one PR per train.
       test-tooling:
         patterns:
-          - "vitest"
-          - "@vitest/*"
-          - "vite"
+          - 'vitest'
+          - '@vitest/*'
+          - 'vite'
         update-types:
           - minor
           - patch
       lint-tooling:
         patterns:
-          - "eslint"
-          - "@eslint/*"
-          - "typescript-eslint"
-          - "prettier"
+          - 'eslint'
+          - '@eslint/*'
+          - 'typescript-eslint'
+          - 'prettier'
         update-types:
           - minor
           - patch
@@ -31,7 +31,7 @@ updates:
   # GitHub Actions used by CI and the release pipeline. Keeps the pinned action
   # versions current (and, once SHA-pinned, updates the SHA + version comment).
   - package-ecosystem: github-actions
-    directory: "/"
+    directory: '/'
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
