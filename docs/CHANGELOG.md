@@ -3,6 +3,21 @@
 All notable changes to this package are documented here. This project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [10.4.1] - 2026-08-12
+
+### Fixed
+
+- Replaced the trailing-separator regex trims (`/\/+$/`) in `config.ts`, `result.ts` and
+  `fileUploader.ts` with a linear reverse scan (`trimTrailing`). CodeQL flagged the patterns as
+  polynomial ReDoS: a string ending in a long run of separators cost O(n²), and `job.server`
+  comes from the API while `baseUrl` comes from caller config. Identical semantics, linear time.
+
+### Security
+
+- Dev toolchain only: pinned transitive `esbuild` to `^0.28.1` via npm `overrides`
+  (GHSA: dev-server arbitrary file read on Windows; tsup still requires `^0.27`).
+  The published package is unaffected — esbuild is a devDependency and only `dist/` ships.
+
 ## [10.4.0] - 2026-08-07
 
 Supported-runtime change and dev-toolchain security update. No API changes.
