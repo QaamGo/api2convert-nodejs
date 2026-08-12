@@ -64,6 +64,9 @@
     "check": "npm run lint && npm run typecheck && npm run test && npm run test:security && npm run audit",
     "prepublishOnly": "npm run check && npm run build"
   },
+  "overrides": {
+    "esbuild": "^0.28.1"
+  },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.1.2",
