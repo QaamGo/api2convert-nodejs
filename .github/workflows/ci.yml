@@ -55,8 +55,8 @@ jobs:
 
   live:
     # Live tests hit the real (production) API and consume quota, so they run only
-    # on demand or on master, and only when the key secret is present.
-    if: ${{ github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/master' }}
+    # on demand or on main, and only when the key secret is present.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     env:
       API2CONVERT_API_KEY: ${{ secrets.API2CONVERT_API_KEY }}
