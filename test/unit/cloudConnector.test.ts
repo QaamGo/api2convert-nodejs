@@ -22,9 +22,9 @@ const EXPECTED_INPUT = {
 
 /** The exact output_target descriptor fixture 1 expects — note: no `status` key. */
 const EXPECTED_OUTPUT_TARGET = {
-  type: 'ftp',
-  parameters: { host: 'ftp.example.com', file: '/out/photo.jpg' },
-  credentials: { username: 'u', password: 'p' },
+  type: 'azure',
+  parameters: { container: 'out-container', file: '/out/photo.jpg' },
+  credentials: { accountname: 'n', accountkey: 'k' },
 };
 
 describe('Fixture 1 — create-payload (what convert() serializes)', () => {
@@ -37,9 +37,9 @@ describe('Fixture 1 — create-payload (what convert() serializes)', () => {
 
     const input = CloudInput.amazonS3('my-bucket', 'in/photo.png', 'AKIA_TEST', 'SECRET_TEST');
     const target = new OutputTarget(
-      'ftp',
-      { host: 'ftp.example.com', file: '/out/photo.jpg' },
-      { username: 'u', password: 'p' },
+      'azure',
+      { container: 'out-container', file: '/out/photo.jpg' },
+      { accountname: 'n', accountkey: 'k' },
     );
 
     await client.convert(input, 'jpg', null, { outputTargets: [target] });
@@ -76,9 +76,9 @@ describe('Fixture 1 — create-payload (what convert() serializes)', () => {
           target: 'jpg',
           output_target: [
             OutputTarget.of(
-              CloudProvider.Ftp,
-              { host: 'ftp.example.com', file: '/out/photo.jpg' },
-              { username: 'u', password: 'p' },
+              CloudProvider.Azure,
+              { container: 'out-container', file: '/out/photo.jpg' },
+              { accountname: 'n', accountkey: 'k' },
             ).toDict(),
           ],
         },
@@ -94,15 +94,15 @@ describe('Fixture 1 — create-payload (what convert() serializes)', () => {
 
   it('accepts a CloudInput builder on jobs().addInput', async () => {
     const { client, http } = makeClient();
-    http.addJson(200, { id: 'in-1', type: 'cloud', source: 'ftp' });
+    http.addJson(200, { id: 'in-1', type: 'cloud', source: 'azure' });
 
-    await client.jobs().addInput('job-1', CloudInput.ftp('ftp.example.com', 'in/a.png', 'u', 'p'));
+    await client.jobs().addInput('job-1', CloudInput.azure('in-container', 'in/a.png', 'n', 'k'));
 
     const body = http.at(0).json() as Record<string, unknown>;
     expect(body.type).toBe('cloud');
-    expect(body.source).toBe('ftp');
-    expect(body.parameters).toEqual({ host: 'ftp.example.com', file: 'in/a.png' });
-    expect(body.credentials).toEqual({ username: 'u', password: 'p' });
+    expect(body.source).toBe('azure');
+    expect(body.parameters).toEqual({ container: 'in-container', file: 'in/a.png' });
+    expect(body.credentials).toEqual({ accountname: 'n', accountkey: 'k' });
   });
 });
 
@@ -127,8 +127,8 @@ describe('Fixture 2 — read hydration (a GET /jobs/{id} response)', () => {
           target: 'jpg',
           output_target: [
             {
-              type: 'ftp',
-              parameters: { host: 'ftp.example.com', file: '/out/photo.jpg' },
+              type: 'azure',
+              parameters: { container: 'out-container', file: '/out/photo.jpg' },
               credentials: {},
               status: 'uploading',
             },
@@ -145,9 +145,9 @@ describe('Fixture 2 — read hydration (a GET /jobs/{id} response)', () => {
 
     // 2) output target status/parameters/type surface.
     const out = job.conversion[0]?.outputTargets[0];
-    expect(out?.type).toBe('ftp');
+    expect(out?.type).toBe('azure');
     expect(out?.status).toBe('uploading');
-    expect(out?.parameters).toEqual({ host: 'ftp.example.com', file: '/out/photo.jpg' });
+    expect(out?.parameters).toEqual({ container: 'out-container', file: '/out/photo.jpg' });
 
     // 3) credentials are never surfaced (the API returns them empty; the SDK does not hydrate).
     expect(out?.credentials).toEqual({});
@@ -165,14 +165,28 @@ describe('Fixture 2 — read hydration (a GET /jobs/{id} response)', () => {
     expect(job.conversion[0]?.outputTargets[0]?.type).toBe('r2');
     expect(job.conversion[0]?.outputTargets[0]?.status).toBe('waiting');
   });
+
+  it('still hydrates the retired ftp provider on historical jobs', () => {
+    // `ftp` is no longer build-side vocabulary, but the API still returns it on jobs created
+    // before it was retired. Reads must stay raw strings so those jobs never fail to hydrate.
+    const job = jobFromDict({
+      id: 'job-1',
+      status: { code: 'completed' },
+      input: [{ id: 'in-1', type: 'cloud', source: 'ftp', status: 'ready' }],
+      conversion: [{ target: 'jpg', output_target: [{ type: 'ftp', status: 'completed' }] }],
+    });
+
+    expect(job.input[0]?.source).toBe('ftp');
+    expect(job.conversion[0]?.outputTargets[0]?.type).toBe('ftp');
+    expect(Object.values(CloudProvider)).not.toContain('ftp');
+  });
 });
 
 describe('the new cloud value types', () => {
-  it('exposes the six-provider vocabulary, build-side only', () => {
+  it('exposes the five-provider vocabulary, build-side only', () => {
     expect(Object.values(CloudProvider)).toEqual([
       'amazons3',
       'azure',
-      'ftp',
       'gdrive',
       'googlecloud',
       'youtube',
@@ -212,10 +226,10 @@ describe('the new cloud value types', () => {
   });
 
   it('omits status on serialize but hydrates it on read', () => {
-    const created = new OutputTarget('ftp', { host: 'h' }, { username: 'u' }, 'completed');
+    const created = new OutputTarget('azure', { container: 'c' }, { accountkey: 'k' }, 'completed');
     expect(created.toDict()).not.toHaveProperty('status');
 
-    const read = OutputTarget.of('ftp');
+    const read = OutputTarget.of('azure');
     expect(read.status).toBeNull();
   });
 });

@@ -36,8 +36,8 @@ describe('3a — object rendering masks credentials', () => {
 
   it('masks an OutputTarget’s credentials', () => {
     const target = OutputTarget.of(
-      CloudProvider.Ftp,
-      { host: 'ftp.example.com' },
+      CloudProvider.Azure,
+      { container: 'out-container' },
       { username: 'u', password: SECRET },
     );
     for (const rendered of renderings(target)) {

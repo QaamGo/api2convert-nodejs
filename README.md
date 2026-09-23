@@ -123,7 +123,7 @@ try {
 
 ## Cloud storage
 
-Read an input straight from your own S3/Azure/FTP/Google Cloud storage, and/or deliver the converted
+Read an input straight from your own S3/Azure/Google Cloud storage, and/or deliver the converted
 output into a bucket — no need to route bytes through your app. Credentials ride in the request body,
 so the SDK masks the whole credentials object to `[REDACTED]` on inspection/logging and never puts it
 in an error message.
@@ -153,7 +153,7 @@ const target = OutputTarget.of(
 await client.convert('report.docx', 'pdf', null, { outputTargets: [target] });
 ```
 
-`azure`, `ftp` and `googleCloud` have matching `CloudInput` input factories; output uses the generic
+`azure` and `googleCloud` have matching `CloudInput` input factories; output uses the generic
 `OutputTarget` for every provider.
 
 ## Error handling

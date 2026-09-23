@@ -89,22 +89,6 @@ export class CloudInput {
     );
   }
 
-  /** Import from an FTP server. */
-  static ftp(
-    host: string,
-    file: string,
-    username: string,
-    password: string,
-    parameters: JsonObject = {},
-    credentials: JsonObject = {},
-  ): CloudInput {
-    return new CloudInput(
-      CloudProvider.Ftp,
-      { host, file, ...parameters },
-      { username, password, ...credentials },
-    );
-  }
-
   /** Import from Google Cloud Storage. */
   static googleCloud(
     projectid: string,

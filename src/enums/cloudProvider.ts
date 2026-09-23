@@ -8,7 +8,7 @@
  * never throws — hydration never parses this enum.
  *
  * Import support (a `CloudInput` factory) exists for {@link CloudProvider.AmazonS3},
- * {@link CloudProvider.Azure}, {@link CloudProvider.Ftp} and {@link CloudProvider.GoogleCloud}.
+ * {@link CloudProvider.Azure} and {@link CloudProvider.GoogleCloud}.
  * {@link CloudProvider.Gdrive} and {@link CloudProvider.Youtube} are **output-only** (they
  * validate as an output `type` but have no downloader); Google Drive *input* uses the
  * separate `gdrive_picker` input type.
@@ -16,7 +16,6 @@
 export enum CloudProvider {
   AmazonS3 = 'amazons3',
   Azure = 'azure',
-  Ftp = 'ftp',
   Gdrive = 'gdrive',
   GoogleCloud = 'googlecloud',
   Youtube = 'youtube',
