@@ -3,6 +3,13 @@
 All notable changes to this package are documented here. This project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [10.4.3] - 2026-11-06
+
+### Changed
+
+- Releases reach npm through trusted publishing, so no npm token is involved any more. The package
+  itself is unchanged, and it still comes with a provenance statement.
+
 ## [10.4.2] - 2026-11-06
 
 ### Removed
