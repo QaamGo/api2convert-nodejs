@@ -1,2 +1,2 @@
 /** The SDK version — kept in lockstep with the PHP/Python/Java SDKs. */
-export const VERSION = '10.4.3';
+export const VERSION = '10.4.2';
