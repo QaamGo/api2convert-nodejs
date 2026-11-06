@@ -3,6 +3,20 @@
 All notable changes to this package are documented here. This project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [10.4.2] - 2026-11-06
+
+### Removed
+
+- The FTP cloud provider, because FTP is being retired from the API: `CloudInput.ftp()` and
+  `CloudProvider.Ftp`. Code that uses them no longer compiles or fails at run time, and needs another
+  provider. Reading stays tolerant: jobs created with `ftp` earlier still load.
+
+### Changed
+
+- Development tools only, so nothing changes for users of the package, which has no runtime
+  dependencies: vite 8.3, vitest 4.1.12 and an override to minimatch 11, which clears every open
+  `npm audit` finding.
+
 ## [10.4.1] - 2026-08-12
 
 ### Fixed
